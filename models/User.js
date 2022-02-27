@@ -1,6 +1,6 @@
 var knex = require("../database/connection")
-var bcrypt = require("bcrypt")
-
+var bcrypt = require("bcrypt");
+const PasswordToken = require("./PasswordToken");
 class User {
 
     async findAll() {
@@ -16,6 +16,21 @@ class User {
     async findById(id) {
         try {
             var result = await knex.select(["id", "email", "role", "name"]).where({ id: id }).table("users")
+            if (result.length > 0) {
+                return result[0];
+            }
+            else {
+                return undefined;
+            }
+        } catch (err) {
+            console.log(err)
+            return undefined;
+        }
+    }
+
+    async findByEmail(email) {
+        try {
+            var result = await knex.select(["id", "email", "role", "name"]).where({ email: email }).table("users")
             if (result.length > 0) {
                 return result[0];
             }
@@ -106,6 +121,12 @@ class User {
         else {
             return { status: false, err: "Usuário não encontrado" }
         }
+    }
+
+    async changePassword(newPassword, id, token) {
+        var hash = await bcrypt.hash(newPassword, 10)
+        await knex.update({ password: hash }).where({ id: id }).table("users")
+        await PasswordToken.setUsed(token)
     }
 }
 module.exports = new User()
