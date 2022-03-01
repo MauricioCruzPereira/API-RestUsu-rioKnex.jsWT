@@ -130,9 +130,6 @@ class UserController {
     async login(req, res) {
         var { email, password } = req.body
 
-        console.log(email)
-        console.log(password)
-
         var user = await User.findByEmail(email)
         console.log(user)
         if (user != undefined) {
